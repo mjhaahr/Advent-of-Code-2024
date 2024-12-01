@@ -6,7 +6,7 @@ Repo for my entries for [Advent of Code 2024](https://adventofcode.com/2024/abou
 
 To run, use the provided `runner.py` script:
 
-```python
+```
 python runner.py [day#] [part# = 1] [dataSet = 0]
 # day#: Sets the day to run
 # part#: Sets which part to run (defaults to 1 unless 2 is entered)
