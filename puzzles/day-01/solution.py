@@ -1,13 +1,23 @@
 import sys
 
 def puzzle(filename, part2):
+    list0 = []
+    list1 = []
     with open(filename, 'r') as fp:
         while True:
             line = fp.readline()
             if line == '':
                 break   
-        
+                
+            lineData = line.split()
+            
+            list0.append(int(lineData[0]))
+            list1.append(int(lineData[1]))
+       
     score = 0
+    for x, y in zip(sorted(list0), sorted(list1)):
+        score += abs(x - y)
+        
     print(score)
     
 if __name__ == "__main__":
