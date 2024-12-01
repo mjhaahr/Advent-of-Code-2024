@@ -3,6 +3,7 @@ import sys
 def puzzle(filename, part2):
     list0 = []
     list1 = []
+    list1D = {}
     with open(filename, 'r') as fp:
         while True:
             line = fp.readline()
@@ -11,12 +12,23 @@ def puzzle(filename, part2):
                 
             lineData = line.split()
             
-            list0.append(int(lineData[0]))
-            list1.append(int(lineData[1]))
+            list0Data = int(lineData[0])            
+            list1Data = int(lineData[1])
+            
+            list0.append(list0Data)
+            list1.append(list1Data)
+            list1D[list1Data] = list1D.get(list1Data, 0) + 1
+            
        
     score = 0
-    for x, y in zip(sorted(list0), sorted(list1)):
-        score += abs(x - y)
+    
+    if part2 == False:
+        for x, y in zip(sorted(list0), sorted(list1)):
+            score += abs(x - y)
+    else:
+        for x in list0:
+            freq = list1D.get(x, 0)
+            score += x * freq
         
     print(score)
     
