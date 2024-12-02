@@ -32,10 +32,8 @@ if __name__ == "__main__":
     if (dataSet > 0):
         inputName = f"example{dataSet}"
     
-    print(f"Running Day-{day:02d} Part {'2' if (part2 == True) else '1'} with {inputName}")
+    print(f"Running Day-{day:02d} Part {'2' if (part2 == True) else '1'} with {inputName}.txt")
     path = f"./puzzles/day-{day:02d}/solution.py"
     inputPath = f"./inputs/day-{day:02d}/{inputName}.txt"
-    
-    print(f"python {path} {inputPath} {'2' if (part2 == True) else '1'}")
     
     os.system(f"python {path} {inputPath} {'2' if (part2 == True) else '1'}")
