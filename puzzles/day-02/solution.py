@@ -10,6 +10,9 @@ def puzzle(filename, part2):
                 
             reports.append(list(int(i) for i in line.split()))
             
+    # TODO: Clean Up
+    # TODO: Part2: Store bad index, and check if list is valid if removing that index (or surrounding)
+            
     score = 0
     for levels in reports:
         incr = (levels[1] > levels[0])
