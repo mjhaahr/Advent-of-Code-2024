@@ -164,5 +164,3 @@ cython_debug/
 
 # Not sharing inouts
 inputs/day-*
-makeday.py
-

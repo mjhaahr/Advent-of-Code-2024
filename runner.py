@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Runs a given days code
 import sys
 import os
