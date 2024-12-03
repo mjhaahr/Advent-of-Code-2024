@@ -8,6 +8,8 @@ part2Pattern = re.compile(r"mul\((\d*),(\d*)\)|do\(\)|don't\(\)")
 
 def puzzle(filename, part2):
     instructions = []
+    # Start enabled
+    enable = True
     with open(filename, 'r') as fp:
         while True:
             line = fp.readline()
@@ -21,30 +23,14 @@ def puzzle(filename, part2):
                 # Loop over all the found instructions
                 for inst in part2Pattern.finditer(line):
                     if inst.group(0) == "do()":
-                        # "do()" enables the multiplication
-                        instructions.append(True)
+                        # "do()" enables the following instructions until the next "don't()"
+                        enable = True
                     elif inst.group(0) == "don't()":
-                        # "don't()" disables the multiplication
-                        instructions.append(False)
-                    else:
-                        # else just store the standard multiplication operation
-                        instructions.append([inst.group(1), inst.group(2)])           
-    
-    # If part 2, filter out the disabled instructions
-    if part2:
-        # Start enabled
-        enable = True
-        filteredInstructions = []
-        # Loop over all instructions
-        for inst in instructions:
-            if type(inst) == bool:
-                # If the instruction is a control type, update the enable flag accordingly
-                enable = inst
-            elif enable:
-                # If the instruction is not a control inst (must be multiplication) AND they are enabled, add to the new list
-                filteredInstructions.append(inst)
-                
-        instructions = filteredInstructions
+                        # "don't()" disables the following instructions until the next "do()"
+                        enable = False
+                    elif enable:
+                        # if enabled, store the standard multiplication instruction
+                        instructions.append([inst.group(1), inst.group(2)])
     
     score = 0
     # Perform the multiplication instructions and sum
