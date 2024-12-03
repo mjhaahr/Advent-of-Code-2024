@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import shutil
 
 days = sorted(os.listdir("puzzles"))
 
@@ -14,9 +15,9 @@ print(f"Do you want to create:\n{' '*4}{puzzleEntry}\n{' '*4}{solEntry}\n{' '*4}
 
 res = input()
 if res.lower() == 'y':
-    os.system(f"mkdir -p {puzzleEntry}")
-    os.system(f"mkdir -p {inputsEntry}")
-    os.system(f"cp -p ./template.py {solEntry}")
+    os.mkdir(puzzleEntry)
+    os.mkdir(inputsEntry)
+    shutil.copyfile("./template.py", solEntry)
     print("\nWould you like to open the new solution script\nPress Y/y to accept:")
     
     res = input()
