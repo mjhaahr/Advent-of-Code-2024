@@ -1,41 +1,34 @@
 import sys
 import re
 
-# Find just the multiplication instructions
-part1Pattern = re.compile(r"mul\((\d*),(\d*)\)")
 # Find the multiplication and control instructions
-part2Pattern = re.compile(r"mul\((\d*),(\d*)\)|do\(\)|don't\(\)")
+pattern = re.compile(r"mul\((\d+),(\d+)\)|do\(\)|don't\(\)")
 
 def puzzle(filename, part2):
-    instructions = []
     # Start enabled
     enable = True
+    # Accumulator
+    score = 0
+    
     with open(filename, 'r') as fp:
         while True:
             line = fp.readline()
             if line == '':
                 break   
             
-            if part2 == False:
-                # Add the new instructions to the list
-                instructions.extend(part1Pattern.findall(line))
-            else:
-                # Loop over all the found instructions
-                for inst in part2Pattern.finditer(line):
-                    if inst.group(0) == "do()":
-                        # "do()" enables the following instructions until the next "don't()"
-                        enable = True
-                    elif inst.group(0) == "don't()":
-                        # "don't()" disables the following instructions until the next "do()"
-                        enable = False
-                    elif enable:
-                        # if enabled, store the standard multiplication instruction
-                        instructions.append([inst.group(1), inst.group(2)])
-    
-    score = 0
-    # Perform the multiplication instructions and sum
-    for x, y in instructions:
-        score += int(x) * int(y)
+            # Loop over all the found instructions
+            for inst in pattern.finditer(line):
+                if inst.group(0) == "do()":
+                    # "do()" enables the following instructions until the next "don't()"
+                    # Does not affect Part 1
+                    enable = True
+                elif inst.group(0) == "don't()":
+                    # "don't()" disables the following instructions until the next "do()"
+                    # If running Part 1, force set enable to true to ignore the control instructions
+                    enable = False if (part2 == True) else True
+                elif enable:
+                    # if enabled, perform the multiplication instruction
+                    score += int(inst.group(1)) * int(inst.group(2))
         
     print(score)
     
