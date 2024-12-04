@@ -1,14 +1,17 @@
 import sys
-    
-# Create grid of letters
-wordsearch = []
-dims = [0, 0]
+import os
+
+# setting path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+
+# importing
+import utils
 
 def puzzle(filename, part2):
     # Zero the Accumulator
     score = 0
     
-    global wordsearch
+    strs = []
     
     # Open File
     with open(filename, 'r') as fp:
@@ -20,10 +23,9 @@ def puzzle(filename, part2):
             if line == '':
                 break   
                    
-            wordsearch.append(list(c for c in line if c.isalpha()))
+            strs.append(list(c for c in line if c.isalpha()))
             
-    dims[1] = len(wordsearch) - 1
-    dims[0] = len(wordsearch[0]) - 1
+    wordsearch = utils.Grid(strs)
        
     # Look for 'X' then run DFS around it and continue in that direction
     for y, row in enumerate(wordsearch):
@@ -31,19 +33,19 @@ def puzzle(filename, part2):
             if part2 == False:
                 # If found 'X', could be the start of an 'XMAS'
                 if char == 'X':
-                    score += findXMAS(x, y)
+                    score += findXMAS(x, y, wordsearch)
             else:
                 # If running Part2, looking for 'A'
                 if char == 'A':
-                    score += findMAS(x, y)
+                    score += findMAS(x, y, wordsearch)
         
     print(score)
 
 # Takes a positon (at an 'X') and looks for 'XMAS' around it    
 # Returns the number of valid XMAS's
-def findXMAS(x, y):
+def findXMAS(x, y, wordsearch):
     xmases = 0
-    if wordsearch[y][x] == 'X':
+    if wordsearch.get(x, y) == 'X':
         # Loop over alternate directions to find the surroundings
         for j in [-1, 0, 1]:
             for i in [-1, 0, 1]:
@@ -51,23 +53,20 @@ def findXMAS(x, y):
                 if i == 0 and j == 0:
                     continue
                     
-                xmases += digInDir(x, y, i, j, 'M')
+                xmases += digInDir(x, y, i, j, 'M', wordsearch)
                 
     return xmases
    
 # digs in a direction (recursion) to find the rest of XMAS 
-def digInDir(x, y, i, j, target):
+def digInDir(x, y, i, j, target, wordsearch):
     newX = x + i
     newY = y + j
-    # If at a bounds, exit early
-    if newX < 0 or newY < 0 or newX > dims[0] or newY > dims[1]:
-        return 0
-    # Found target, time to find next
-    elif wordsearch[newY][newX] == target:
+    if wordsearch.get(newX, newY) == target:
+        # Found target, time to find next
         if target == 'M':
-            return digInDir(newX, newY, i, j, 'A')
+            return digInDir(newX, newY, i, j, 'A', wordsearch)
         elif target == 'A':
-            return digInDir(newX, newY, i, j, 'S')
+            return digInDir(newX, newY, i, j, 'S', wordsearch)
         # Found XMAS
         elif target == 'S':
             return 1
@@ -75,20 +74,17 @@ def digInDir(x, y, i, j, target):
         return 0
     
 # Tries to find if the current A is located in an X
-def findMAS(x, y):
+def findMAS(x, y, wordsearch):
     valid = 0
     # If not actually an 'A', skip
-    if wordsearch[y][x] != 'A':
-        pass
-    # If at a bounds, skip, cannot be valid there
-    if x <= 0 or y <= 0 or x >= dims[0] or y >= dims[1]:
+    if wordsearch.get(x, y) != 'A':
         pass
     else:
         # Get the chars of interest
-        UL = wordsearch[y - 1][x - 1]
-        UR = wordsearch[y - 1][x + 1]
-        DL = wordsearch[y + 1][x - 1]
-        DR = wordsearch[y + 1][x + 1]
+        UL = wordsearch.get(x - 1, y - 1)
+        UR = wordsearch.get(x + 1, y - 1)
+        DL = wordsearch.get(x - 1, y + 1)
+        DR = wordsearch.get(x + 1, y + 1)
         
         # Check first diagonal
         if (UL == 'M' and DR == 'S') or (UL == 'S' and DR == 'M'):
