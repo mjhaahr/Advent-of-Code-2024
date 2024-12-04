@@ -1,10 +1,9 @@
 import sys
 import os
 
-# setting path
+# Modifying Path to include Repo Directory (for util import)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
-
-# importing
+# Import Utilities
 import utils
 
 def puzzle(filename, part2):
@@ -23,15 +22,6 @@ def puzzle(filename, part2):
     
     # Return Accumulator    
     print(score)
-    
-
-        
-l = [['1', '2'], ['3', '4']]
-
-g = utils.Grid(l)
-print(g)
-print(g.get(0, 0))
-print(g.get((1, 1)))
     
 if __name__ == "__main__":
     # Check number of Arguments, expect 2 (after script itself)

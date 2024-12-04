@@ -47,13 +47,9 @@ def findXMAS(x, y, wordsearch):
     xmases = 0
     if wordsearch.get(x, y) == 'X':
         # Loop over alternate directions to find the surroundings
-        for j in [-1, 0, 1]:
-            for i in [-1, 0, 1]:
-                # If at the center, skip
-                if i == 0 and j == 0:
-                    continue
-                    
-                xmases += digInDir(x, y, i, j, 'M', wordsearch)
+        for val, newX, newY, i, j in wordsearch.getNeighborsOf8(x, y):
+            if val == 'M':
+                xmases += digInDir(newX, newY, i, j, 'A', wordsearch)
                 
     return xmases
    
@@ -63,9 +59,7 @@ def digInDir(x, y, i, j, target, wordsearch):
     newY = y + j
     if wordsearch.get(newX, newY) == target:
         # Found target, time to find next
-        if target == 'M':
-            return digInDir(newX, newY, i, j, 'A', wordsearch)
-        elif target == 'A':
+        if target == 'A':
             return digInDir(newX, newY, i, j, 'S', wordsearch)
         # Found XMAS
         elif target == 'S':
@@ -81,10 +75,8 @@ def findMAS(x, y, wordsearch):
         pass
     else:
         # Get the chars of interest
-        UL = wordsearch.get(x - 1, y - 1)
-        UR = wordsearch.get(x + 1, y - 1)
-        DL = wordsearch.get(x - 1, y + 1)
-        DR = wordsearch.get(x + 1, y + 1)
+        COI = wordsearch.getNeighborsOf4Rot(x, y)
+        [UL, UR, DL, DR] = [i[0] for i in COI]
         
         # Check first diagonal
         if (UL == 'M' and DR == 'S') or (UL == 'S' and DR == 'M'):
