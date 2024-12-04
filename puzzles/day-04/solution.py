@@ -28,9 +28,14 @@ def puzzle(filename, part2):
     # Look for 'X' then run DFS around it and continue in that direction
     for y, row in enumerate(wordsearch):
         for x, char in enumerate(row):
-            # If found 'X', could be the start of an 'XMAS'
-            if char == 'X':
-                score += findXMAS(x, y)
+            if part2 == False:
+                # If found 'X', could be the start of an 'XMAS'
+                if char == 'X':
+                    score += findXMAS(x, y)
+            else:
+                # If running Part2, looking for 'A'
+                if char == 'A':
+                    score += findMAS(x, y)
         
     print(score)
 
@@ -49,7 +54,8 @@ def findXMAS(x, y):
                 xmases += digInDir(x, y, i, j, 'M')
                 
     return xmases
-    
+   
+# digs in a direction (recursion) to find the rest of XMAS 
 def digInDir(x, y, i, j, target):
     newX = x + i
     newY = y + j
@@ -68,7 +74,30 @@ def digInDir(x, y, i, j, target):
     else:
         return 0
     
+# Tries to find if the current A is located in an X
+def findMAS(x, y):
+    valid = 0
+    # If not actually an 'A', skip
+    if wordsearch[y][x] != 'A':
+        pass
+    # If at a bounds, skip, cannot be valid there
+    if x <= 0 or y <= 0 or x >= dims[0] or y >= dims[1]:
+        pass
+    else:
+        # Get the chars of interest
+        UL = wordsearch[y - 1][x - 1]
+        UR = wordsearch[y - 1][x + 1]
+        DL = wordsearch[y + 1][x - 1]
+        DR = wordsearch[y + 1][x + 1]
+        
+        # Check first diagonal
+        if (UL == 'M' and DR == 'S') or (UL == 'S' and DR == 'M'):
+            # Check Second Diagonal
+            if (UR == 'M' and DL == 'S') or (UR == 'S' and DL == 'M'):
+                valid = 1
                 
+                
+    return valid
     
 if __name__ == "__main__":
     # Check number of Arguments, expect 2 (after script itself)
