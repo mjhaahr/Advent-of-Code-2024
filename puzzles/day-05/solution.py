@@ -5,17 +5,17 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 # Import Utilities
 import utils
+    
+# Right Rules, key is left value, value is list of right values that must come after
+rightRules = {}
+# Right Rules, key is right value, value is list of left values that must come before
+leftRules = {}
 
 def puzzle(filename, part2):
     # Zero the Accumulator
     score = 0
     
-    # Right Rules, key is left value, value is list of right values that must come after
-    rightRules = {}
-    # Right Rules, key is right value, value is list of left values that must come before
-    leftRules = {}
-    
-    orders = []
+    updates = []
     
     # Open File
     with open(filename, 'r') as fp:
@@ -44,37 +44,65 @@ def puzzle(filename, part2):
                     
                 # Process Order
                 elif line[2] == ',':
-                    orders.append(list(int(i) for i in line.split(',')))
+                    updates.append(list(int(i) for i in line.split(',')))
                     
             except IndexError:
                 continue
     
     # Loop over orders
-    for order in orders:
+    for upd in updates:
         # Loop over elements
-        goodOrder = True
-        for i, val in enumerate(order):
+        goodUpdate = True
+        for i, val in enumerate(upd):
             # Check right values
             rightRule = rightRules.get(val, [])
             # For each in the right-ward values of the list, check if it's in rightRule
-            goodRight = all([(j in rightRule) for j in order[(i + 1):]])
+            goodRight = all([(j in rightRule) for j in upd[(i + 1):]])
             
             # Check left values
             leftRule = leftRules.get(val, [])
             # For each in the left-ward values of the list, check if it's in leftRule
-            goodLeft = all([(j in leftRule) for j in order[:(i)]])
+            goodLeft = all([(j in leftRule) for j in upd[:(i)]])
             
             # If one is bad, exit
             if not goodLeft or not goodRight:
-                goodOrder = False
+                goodUpdate = False
                 break
         
-        # if a good order, take center of list and add to sum  
-        if goodOrder:
-            score += order[len(order)//2]
+        if part2 is False:
+            # if a good update, take center of list and add to sum  
+            if goodUpdate:
+                score += upd[len(upd)//2]
+        # if Part 2, re-sort the bad orders then add center
+        else:
+            if not goodUpdate:
+                newUpdate = resortUpdate(upd)
+                score += newUpdate[len(newUpdate)//2]
+            
+            
     
     # Return Accumulator    
     print(score)
+    
+def resortUpdate(upd):
+    newUpdate = [upd[0]]
+    
+    for page in upd[1:]:
+        leftRule = leftRules.get(page, [])
+        rightRule = rightRules.get(page, [])
+        added = False
+        for i, val in enumerate(newUpdate):
+            # If the value is not in the left rule, means that's the furthest it can go
+            if val not in leftRule:
+                newUpdate.insert(i, page)
+                added = True
+                break
+        
+        if not added:
+            newUpdate.append(page)
+    
+    return newUpdate
+    
     
 if __name__ == "__main__":
     # Check number of Arguments, expect 2 (after script itself)
