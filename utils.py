@@ -18,14 +18,15 @@ class Grid:
             return self.grid[y][x]
     
     # Attempts to set a value, if cannot, returns false   
-    def set(self, x, y, val):
+    def set(self, x, y, val = 0):
         # Pull out coords from a tuple or list
         if (type(x) == list or type(x) == tuple):
+            val = y
             y = x[1]
             x = x[0]
             
         # If at a bounds, skip, cannot be valid there
-        if x <= 0 or y <= 0 or x >= bounds[0] or y >= bounds[1]:
+        if x < 0 or y < 0 or x > self.bounds[0] or y > self.bounds[1]:
             return False
         else:
             self.grid[y][x] = val
@@ -34,7 +35,7 @@ class Grid:
     def __str__(self):
         rowStrs = []
         for row in self.grid:
-            rowStrs.append(", ".join(list(str(i) for i in row)))
+            rowStrs.append("".join(list(str(i) for i in row)))
             
         return f"Grid:\nBounds: [0, 0] to {self.bounds}\n  {"\n  ".join(rowStrs)}\n"
         

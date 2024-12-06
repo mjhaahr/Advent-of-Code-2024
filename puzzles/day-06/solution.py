@@ -41,7 +41,8 @@ def puzzle(filename, part2):
             
     visited = {}
     
-    dirs = cycle([(0, -1), (1, 0), (0, 1), (-1, 0)])
+    dirList = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    dirs = cycle(dirList)
     
     currDir = next(dirs)
     square = start
@@ -53,36 +54,53 @@ def puzzle(filename, part2):
         visits.add(currDir)
         visited[square] = visits
         
-        print(f"{square}: {visits}")
-        
         nextSquare = tuple([x + y for x, y in zip(square, currDir)])
-        val = m.get(nextSquare)
-        if val == '#':
+        nextVal = m.get(nextSquare)
+        if nextVal == '#':
             currDir = next(dirs)
             nextSquare = tuple([x + y for x, y in zip(square, currDir)])
             
         # If not blocked, run part 2  
         elif part2:
             # To find obstacles, count times a perpendicular ray (from the right) of the current direction of travel intersects a path, then the obstacle is the next square, sum num obstacles, has to be uninterrupted
+            
+            # TODO: Rewrite this shit and clean it up
+            
+            lookAheadVisited = copy(visited)
+            lookAheadDirs = copy(dirs)
+            
+            # Set the obstacle
+            m.set(nextSquare, '#')
+            
             # Look to the right
-            targetDir = next(copy(dirs))
+            targetDir = next(lookAheadDirs)
+            # Start path
             lookSquare = tuple([x + y for x, y in zip(square, targetDir)])
             lookVal = m.get(lookSquare)
             while lookVal:
-                print(f"  {lookSquare}: {lookVal}")
-                # If blocked, break
+                # Advance down the path
+                newVisits = lookAheadVisited.get(lookSquare, set())
+                newVisits.add(targetDir)
+                lookAheadVisited[lookSquare] = newVisits
+                # If blocked, need to trun
                 if lookVal == '#':
-                    break
+                    targetDir = next(lookAheadDirs)
+                    lookSquare = tuple([x + y for x, y in zip(lookSquare, targetDir)])
+                    lookVal = m.get(lookSquare)
                 # If not blocked, look for previous visits (in that direction)
-                elif targetDir in visited.get(lookSquare, set()):
+                elif targetDir in newVisits:
                     score += 1
                     break
                 # Else, keep looking
                 else:
                     lookSquare = tuple([x + y for x, y in zip(lookSquare, targetDir)])
                     lookVal = m.get(lookSquare)
+                    
+            # unset the obstacle
+            m.set(nextSquare, '.')
             
         square = nextSquare
+        val = m.get(square)
     
     if not part2:
         score = len(visited)
