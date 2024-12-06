@@ -53,6 +53,8 @@ def puzzle(filename, part2):
         visits.add(currDir)
         visited[square] = visits
         
+        print(f"{square}: {visits}")
+        
         nextSquare = tuple([x + y for x, y in zip(square, currDir)])
         val = m.get(nextSquare)
         if val == '#':
@@ -67,6 +69,7 @@ def puzzle(filename, part2):
             lookSquare = tuple([x + y for x, y in zip(square, targetDir)])
             lookVal = m.get(lookSquare)
             while lookVal:
+                print(f"  {lookSquare}: {lookVal}")
                 # If blocked, break
                 if lookVal == '#':
                     break
