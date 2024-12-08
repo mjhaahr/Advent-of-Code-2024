@@ -25,7 +25,7 @@ def puzzle(filename, part2):
             m = pattern.match(line)
             
             val = int(m.group(1))
-            comps = list(int(i) for i in m.group(2).split())
+            comps = [int(i) for i in m.group(2).split()]
             
             eqs.append([val, comps])
             
@@ -34,7 +34,12 @@ def puzzle(filename, part2):
     for eq in eqs:
         val = eq[0]
         comps = eq[1]
-        for ops in product(['+', '*'], repeat = (len(comps) - 1)):
+        
+        listOfOps = ['+', '*']
+        if part2:
+            listOfOps.append('||')
+            
+        for ops in product(listOfOps, repeat = (len(comps) - 1)):
             if performOp(copy.copy(comps), list(ops)) == val:
                 score += val
                 break
@@ -57,6 +62,9 @@ def performOp(listOfVals, listOfOps):
     
         case '*':
             listOfVals[0] = val * listOfVals[0]
+            
+        case '||':
+            listOfVals[0] = int(str(val) + str(listOfVals[0]))
             
     return performOp(listOfVals, listOfOps)
     
