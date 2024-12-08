@@ -41,17 +41,35 @@ def puzzle(filename, part2):
     antinodes = set()
     
     for freq, nodes in freqs.items():
+        # For part, figure out slope of distance, and then figure out how to populate the grid accordingly
         for a, b in combinations(nodes, 2):
             distX = a[0] - b[0]
             distY = a[1] - b[1]
-            dist = [distX, distY]
             
-            a1 = [i + j for i, j in zip(a, dist)]
-            a2 = [i - j for i, j in zip(b, dist)]
+            mult = 1
             
-            for x, y in [a1, a2]:
-                if x >= 0 and y >= 0 and x <= bounds[0] and y <= bounds[1]:
-                    antinodes.add(tuple([x, y]))
+            while True:
+                dist = [mult * distX, mult * distY]
+                if not part2:
+                    a1 = [i + j for i, j in zip(a, dist)]
+                    a2 = [i - j for i, j in zip(b, dist)]
+                else:
+                    a1 = [i + j for i, j in zip(b, dist)]
+                    a2 = [i - j for i, j in zip(a, dist)]
+                    
+            
+                atEnd = True
+                for x, y in [a1, a2]:
+                    if x >= 0 and y >= 0 and x <= bounds[0] and y <= bounds[1]:
+                        antinodes.add(tuple([x, y]))
+                        atEnd = False
+                        
+                if atEnd or not part2:
+                    break
+                else:
+                    mult += 1
+                        
+                
             
     score = len(antinodes)
         
