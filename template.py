@@ -12,13 +12,11 @@ def puzzle(filename, part2):
     
     # Open File
     with open(filename, 'r') as fp:
-        while True:
-            # Loop over all lines
-            line = fp.readline()
+        # Loop over all lines
+        line = fp.readline()
+        while line:
             
-            # EOF check
-            if line == '':
-                break   
+            line = fp.readline()  
     
     # Return Accumulator    
     print(score)

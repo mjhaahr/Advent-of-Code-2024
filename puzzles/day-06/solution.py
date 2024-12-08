@@ -16,15 +16,13 @@ def puzzle(filename, part2):
     
     # Open File
     with open(filename, 'r') as fp:
-        while True:
-            # Loop over all lines
-            line = fp.readline()
-            
-            # EOF check
-            if line == '':
-                break   
+        # Loop over all lines
+        line = fp.readline()
+        while line:
                    
             strs.append(list(c for c in line if not c.isspace()))
+            
+            line = fp.readline()
             
     m = utils.Grid(strs)
     
@@ -41,8 +39,7 @@ def puzzle(filename, part2):
             
     visited = {}
     
-    dirList = [(0, -1), (1, 0), (0, 1), (-1, 0)]
-    dirs = cycle(dirList)
+    dirs = cycle([(0, -1), (1, 0), (0, 1), (-1, 0)])
     
     currDir = next(dirs)
     square = start
@@ -52,61 +49,73 @@ def puzzle(filename, part2):
     while(val):
         visits = visited.get(square, set())
         visits.add(currDir)
-        visited[square] = visits
+        visited[square] = visits 
         
         nextSquare = tuple([x + y for x, y in zip(square, currDir)])
         nextVal = m.get(nextSquare)
         if nextVal == '#':
             currDir = next(dirs)
             nextSquare = tuple([x + y for x, y in zip(square, currDir)])
-            
-        # If not blocked, run part 2  
-        elif part2:
-            # To find obstacles, count times a perpendicular ray (from the right) of the current direction of travel intersects a path, then the obstacle is the next square, sum num obstacles, has to be uninterrupted
-            
-            # TODO: Rewrite this shit and clean it up
-            
-            lookAheadVisited = copy(visited)
-            lookAheadDirs = copy(dirs)
-            
-            # Set the obstacle
-            m.set(nextSquare, '#')
-            
-            # Look to the right
-            targetDir = next(lookAheadDirs)
-            # Start path
-            lookSquare = tuple([x + y for x, y in zip(square, targetDir)])
-            lookVal = m.get(lookSquare)
-            while lookVal:
-                # Advance down the path
-                newVisits = lookAheadVisited.get(lookSquare, set())
-                newVisits.add(targetDir)
-                lookAheadVisited[lookSquare] = newVisits
-                # If blocked, need to trun
-                if lookVal == '#':
-                    targetDir = next(lookAheadDirs)
-                    lookSquare = tuple([x + y for x, y in zip(lookSquare, targetDir)])
-                    lookVal = m.get(lookSquare)
-                # If not blocked, look for previous visits (in that direction)
-                elif targetDir in newVisits:
-                    score += 1
-                    break
-                # Else, keep looking
-                else:
-                    lookSquare = tuple([x + y for x, y in zip(lookSquare, targetDir)])
-                    lookVal = m.get(lookSquare)
-                    
-            # unset the obstacle
-            m.set(nextSquare, '.')
-            
+           
         square = nextSquare
         val = m.get(square)
     
     if not part2:
         score = len(visited)
+    else:
+        # Run part 2 to find if an obstacle placed at any point along the path will loop
+        for loc in visited.keys():
+            # To find obstacles, count times a perpendicular ray (from the right) of the current direction of travel intersects a path, then the obstacle is the next square, sum num obstacles, has to be uninterrupted
+            
+            # Cannot run with obstacle where guard starts
+            if loc == start:
+                continue
+            
+            # Set the obstacle
+            m.set(loc, 'O')
+            
+            dirs = cycle([(0, -1), (1, 0), (0, 1), (-1, 0)])
+            score += findLoopedPath(start, dirs, m)
+            
+            # Unset the obstacle
+            m.set(loc, '.')
     
     # Return Accumulator    
     print(score)
+    
+   
+# Returns 1 if path loops 
+def findLoopedPath(start, dirs, m):
+    # Find if placing an obstacle in front of the current path will cause the path to loop
+    currDir = next(dirs)
+    square = start
+    val = m.get(square)
+    
+    visited = {}
+    
+    while val:
+        # Add current element to the list of visited cells (and directions)
+        visits = visited.get(square, set())
+        # Check if already visited this cell
+        if currDir in visits:
+            return 1
+        
+        visits.add(currDir)
+        visited[square] = visits
+        
+        # Look ahead down the path
+        nextSquare = tuple([x + y for x, y in zip(square, currDir)])
+        nextVal = m.get(nextSquare)
+        # If blocked (existing blockage or the obstacle), turn
+        if nextVal == '#' or nextVal == 'O':
+            currDir = next(dirs)
+            nextSquare = tuple([x + y for x, y in zip(square, currDir)])
+        
+        # Advance down the path
+        square = nextSquare
+        val = m.get(square)
+    
+    return 0  
     
 if __name__ == "__main__":
     # Check number of Arguments, expect 2 (after script itself)
