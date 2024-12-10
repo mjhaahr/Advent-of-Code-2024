@@ -34,7 +34,10 @@ def puzzle(filename, part2):
     
     # Loop over all trailheads
     for trailhead in trailheads:
-        score += findScore(trailhead, m)
+        if not part2:
+            score += findScore(trailhead, m)
+        else:
+            score += findRating(trailhead, m)
     
     # Return Accumulator    
     print(score)
@@ -60,6 +63,26 @@ def findScore(trailhead, m):
     
     return len(visited)
     
+# Finds the unique trails from one trailhead
+def findRating(trailhead, m):
+    # Rating is just a sum
+    rating = 0
+    
+    cellStack = [trailhead]
+    while cellStack:
+        cell = cellStack.pop()
+        for val, x, y, offsetX, offsetY in m.getNeighborsOf4(cell[0], cell[1]):
+            # If the neighbor is one greater, it's walkable
+            if val == (m.get(cell)) + 1:
+                # at end
+                if val == 9:
+                    rating += 1
+                    # valid cell, means we found a unique path
+                elif val:
+                    cellStack.append((x, y))
+    
+    
+    return rating
     
     
 if __name__ == "__main__":
