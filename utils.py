@@ -49,7 +49,13 @@ class Grid:
         return next(self.__gridIter)
         
     # returns all neighbors (of 8) in the format [val, x, y, offsetX, offsetY]
-    def getNeighborsOf8(self, x, y):
+    def getNeighborsOf8(self, x, y=0):
+        # Pull out coords from a tuple or list
+        if (type(x) == list or type(x) == tuple):
+            val = y
+            y = x[1]
+            x = x[0]
+            
         neighbors = []
         # Get all Surrounding Cells
         for j in [-1, 0, 1]:
@@ -65,7 +71,13 @@ class Grid:
         return neighbors
         
     # returns all valid neighbors (of 4) in the format [[val, x, y, offsetX, offsetY] (order is U, L, D, R)
-    def getNeighborsOf4(self, x, y):
+    def getNeighborsOf4(self, x, y=0):
+        # Pull out coords from a tuple or list
+        if (type(x) == list or type(x) == tuple):
+            val = y
+            y = x[1]
+            x = x[0]
+            
         neighbors = []
         # Get all Surrounding Cells
         for i, j in [[0, -1], [1, 0], [0, 1], [-1, 0]]:
@@ -76,7 +88,13 @@ class Grid:
         return neighbors
     
     # returns all valid neighbors (of 4 Rotated) in the format [val, x, y, offsetX, offsetY] (order is UL, UR, DL, DR)
-    def getNeighborsOf4Rot(self, x, y):
+    def getNeighborsOf4Rot(self, x, y=0):
+        # Pull out coords from a tuple or list
+        if (type(x) == list or type(x) == tuple):
+            val = y
+            y = x[1]
+            x = x[0]
+            
         neighbors = []
         # Get all Surrounding Cells
         for j in [-1, 1]:

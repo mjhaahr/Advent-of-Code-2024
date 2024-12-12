@@ -13,7 +13,7 @@ def puzzle(filename, part2):
     # Open File
     with open(filename, 'r') as fp:
         # Loop over all lines
-        for line in fp.readlines()
+        for line in fp.readlines():
             line = line.strip() 
     
     # Return Accumulator    
