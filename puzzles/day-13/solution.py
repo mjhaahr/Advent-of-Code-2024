@@ -1,7 +1,6 @@
 import sys
 import os
 import regex
-import numpy as np
 
 # Modifying Path to include Repo Directory (for util import)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -31,6 +30,9 @@ def puzzle(filename, part2):
                 elif m.group(1) == 'B':
                     machines[-1].addB(loc)
                 elif m.group(1) == 'P':
+                    if part2:
+                        loc = (loc[0] + 10000000000000, loc[1] + 10000000000000)
+                        
                     machines[-1].addPrize(loc)
                     machines.append(ClawMachine())
         
@@ -39,7 +41,7 @@ def puzzle(filename, part2):
                     
                     
     for machine in machines:
-        score += machine.bruteSolve()
+        score += machine.solve()
         #print(machine)
     
     # Return Accumulator    
@@ -80,17 +82,37 @@ class ClawMachine:
         # System of linear equations
         # p.x = A * a.x + B * b.x 
         # p.y = A * a.y + B * b.y
-        # Diophantine eqs, want integer solutions 
-        rSide = np.array([[self._a[0], self._b[0]], [self._a[1], self._b[1]]])
-        lSide = np.array(self._prize)
-        sol = np.linalg.solve(rSide, lSide)
         
-        self.cost = 0
+        # Proof
+        # A:
+        # (p.x - A * a.x) = B * b.x
+        # (p.y - A * a.y) = B * b.y
         
-        # Now check if the integer version is valid
-        ints = [int(i) for i in sol]
-        if all([p == ints[0] * a + ints[1] * b for a, b, p in zip(self._a, self._b, self._prize)]):
-            self.cost = ints[0] * 3 + ints[1]
+        # (p.x - A * a.x) / b.x = (p.y - A * a.y) / b.y
+        # p.x * b.y - A * a.x * b.y = p.y * b.x - A * a.y * b.x
+        # A * (a.x * b.y - a.y * b.x) = p.x * b.y - p.y * b.x
+        # A = (p.x * b.y - p.y * b.x) / (a.x * b.y - a.y * b.x)
+        
+        # B:
+        # (p.x - B * b.x) = A * a.x
+        # (p.y - B * b.y) = A * a.y
+        
+        # (p.x - B * b.x) / a.x = (p.y - B * b.y) / a.y
+        # p.x * a.y - B * b.x * a.y = p.y * a.x - B * b.y * a.x
+        # B * (b.x * a.y - b.y * a.x) = p.x * a.y - p.y * a.x
+        # B = (p.x * a.y - p.y * a.x) / (b.x * a.y - b.y * a.x)
+        
+        A = (self._prize[0] * self._b[1] - self._prize[1] * self._b[0]) / (self._a[0] * self._b[1] - self._a[1] * self._b[0])
+        B = (self._prize[0] * self._a[1] - self._prize[1] * self._a[0]) / (self._b[0] * self._a[1] - self._b[1] * self._a[0])
+        
+        intA = int(A)
+        intB = int(B)
+        
+        # Now check if the solutions are integers
+        if intA == A and intB == B:
+            self.cost = intA * 3 + intB
+        else:
+            self.cost = 0
         
         return self.cost
         
