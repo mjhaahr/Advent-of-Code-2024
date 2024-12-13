@@ -23,7 +23,7 @@ def puzzle(filename, part2):
     m = utils.Grid(strs)
     regions = findRegions(m)
     
-    print(m)
+    # print(m)
     
     for region in regions.values():
         area = len(region)
@@ -34,7 +34,7 @@ def puzzle(filename, part2):
         else:
             sides = findSides(region, m)
             price = area * sides
-            print(f"Region: {m.get(list(region)[0])}, A = {area}, S = {sides}, Price = {price}\n")
+            # print(f"Region: {m.get(list(region)[0])}, A = {area}, S = {sides}, Price = {price}\n")
         score += price
     
     # Return Accumulator    
@@ -99,75 +99,146 @@ def findPerimeter(region, m):
 
 # Finds the number of unique sides of a region
 def findSides(region, m):
-    start = findCorner(region)
-    sides = 0
+    # Find top and bottom extents of Grid
+    # Find left and right extents of Grid
+    # Loop over each, finding where there are new edges for each
     
-    square = ()
-    offset = []
-    # Up and left are only directions this can go
-    for d in [(-1, 0), (0, -1)]:
-        if (start[0] + d[0], start[1] + d[1]) in region:
-            square = (start[0] + d[0], start[1] + d[1])
-            offset = d
-          
-    # Single element  
-    if not square:
-        sides = 4
-    else:
-        # Loop: check square right then fwd then left if they are in the region (save the offset)
-            # if not fwd, incr sides
-            # Follow path until back at start
-        sides = 1
-        first = offset
-        while True:
-            # End when back at start
-            if square == start:
-                break
+    sides = 0
+    extents = findExtents(region, m)
+    newRegion = rebuildRegion(region, extents)
+    
+    # Need to find continuities as well
+      
+    # Top edges
+    currEdges = [0] * (extents[1] - extents[0] + 1)      
+    for y in range(len(newRegion)):
+        newEdges = [0] * (extents[1] - extents[0] + 1)
+        for x in range(len(newRegion[y])):
+            newEdges[x] = newRegion[y][x]
             
-            rightDir = utils.getRight(offset)
-            rightSquare = (square[0] + rightDir[0], square[1] + rightDir[1])
-            
-            fwdSquare = (square[0] + offset[0], square[1] + offset[1])
-            
-            leftDir = utils.getLeft(offset)
-            leftSquare = (square[0] + leftDir[0], square[1] + leftDir[1])
-            
-            if rightSquare in region:
-                sides += 1
-                offset = rightDir
-            elif fwdSquare in region:
-                # No change
-                pass
-            elif leftSquare in region:
-                sides += 1
-                offset = leftDir
+        for idx, (i, j) in enumerate(zip(currEdges, newEdges)):
+            # Was not occupied, now occupied
+            if (i == 0 and j == 1):
+                currEdges[idx] = 1
             else:
-                # Have to turn around
-                sides += 2
-                offset = (-offset[0], -offset[1])
+                currEdges[idx] = 0
+        
+        state = False
+        for edge in currEdges:
+            if state == False and edge == 1:
+                state = True
+                sides += 1
+            elif state == True and edge == 0:
+                state= False
                 
-            square = (square[0] + offset[0], square[1] + offset[1])
+        currEdges = newEdges
+        
+    # Bottom edges
+    currEdges = [0] * (extents[1] - extents[0] + 1)      
+    for y in range(len(newRegion) - 1, -1, -1):
+        newEdges = [0] * (extents[1] - extents[0] + 1)
+        for x in range(len(newRegion[y]) - 1, -1, -1):
+            newEdges[x] = newRegion[y][x]
             
-        while offset != utils.getRight(first):
-            sides += 1
-            offset = utils.getLeft(offset)
+        for idx, (i, j) in enumerate(zip(currEdges, newEdges)):
+            if (i == 0 and j == 1):
+                currEdges[idx] = 1
+            else:
+                currEdges[idx] = 0
+        
+        state = False
+        for edge in currEdges:
+            if state == False and edge == 1:
+                state = True
+                sides += 1
+            elif state == True and edge == 0:
+                state= False
+                
+        currEdges = newEdges
+                
+    # Left edges
+    currEdges = [0] * (extents[3] - extents[2] + 1)      
+    for x in range(len(newRegion[y])):
+        newEdges = [0] * (extents[3] - extents[2] + 1)
+        for y in range(len(newRegion)):
+            newEdges[y] = newRegion[y][x]
+            
+        for idx, (i, j) in enumerate(zip(currEdges, newEdges)):
+            # Was not occupied, now occupied
+            if (i == 0 and j == 1):
+                currEdges[idx] = 1
+            else:
+                currEdges[idx] = 0
+        
+        state = False
+        for edge in currEdges:
+            if state == False and edge == 1:
+                state = True
+                sides += 1
+            elif state == True and edge == 0:
+                state= False
+                
+        currEdges = newEdges
+        
+    # Right edges
+    currEdges = [0] * (extents[3] - extents[2] + 1)      
+    for x in range(len(newRegion[y]) - 1, -1, -1):
+        newEdges = [0] * (extents[3] - extents[2] + 1)
+        for y in range(len(newRegion) - 1, -1, -1):
+            newEdges[y] = newRegion[y][x]
+            
+        for idx, (i, j) in enumerate(zip(currEdges, newEdges)):
+            if (i == 0 and j == 1):
+                currEdges[idx] = 1
+            else:
+                currEdges[idx] = 0
+        
+        state = False
+        for edge in currEdges:
+            if state == False and edge == 1:
+                state = True
+                sides += 1
+            elif state == True and edge == 0:
+                state= False
+                
+        currEdges = newEdges
     
     return sides
+    
+    
+# Rebuilds the region into a 2d array (of 1s and 0s, for easier parsing)
+def rebuildRegion(region, extents):
+    newRegion = [[0] * (extents[1] - extents[0] + 1) for _ in range((extents[3] - extents[2] + 1))]
+    offsetX = extents[0]
+    offsetY = extents[2]
+    
+    for x, y in region:
+        newRegion[y - offsetY][x - offsetX] = 1
+    
+    return newRegion
+    
 
-# Finds the bottom right most corner of
-def findCorner(region):
-    corner = (0, 0)
+# Edges of the Grid (left, right, top, bottom)
+def findExtents(region, m):
+    # Work towards center
+    extents = [m.bounds[0], 0, m.bounds[1], 0]
     for cell in region:
-        if cell[0] >= corner[0] and cell[1] >= corner[1]:
-            corner = cell
+        extents[0] = cell[0] if cell[0] < extents[0] else extents[0]
+        extents[1] = cell[0] if cell[0] > extents[1] else extents[1]
         
-    return corner
+        extents[2] = cell[1] if cell[1] < extents[2] else extents[2]
+        extents[3] = cell[1] if cell[1] > extents[3] else extents[3]
+        
+    return extents
     
     
 
 # Algo: run DFS to find extents of each region (saving the locations in a dict (make some way of making them unique labels), add to a set at each key)
 # Then area is length of set, reconstruct the area to figure out the perimeter: for each cell, which neighbor (of 4) is in the set, sum that, that's the perimeter
-# Sides: find corner, hug a wall, each turn taken is a new side
+# Sides:
+    # Find top and bottom extents of Grid
+    # Find left and right extents of Grid
+    # Loop over each, finding where there are new edges for each
     
 if __name__ == "__main__":
     # Check number of Arguments, expect 2 (after script itself)
