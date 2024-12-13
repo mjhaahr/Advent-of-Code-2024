@@ -14,6 +14,8 @@ python runner.py [day#] [part# = 1] [dataSet = 0]
 # data sets are stored in the inputs/day-# dir
 ```
 
+Each day uses a common utilities module (called `utils.py`), this stays in the top-level-directory for the repo, and is included using some path management shenanigans
+
 To create a new day, use the provided `makeday.py` script
 
 To add an input to the most recent day, use the provided `addinput.py` script
