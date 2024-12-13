@@ -1,6 +1,7 @@
 import sys
 import os
 import regex
+import numpy as np
 
 # Modifying Path to include Repo Directory (for util import)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -38,8 +39,8 @@ def puzzle(filename, part2):
                     
                     
     for machine in machines:
-        print(machine)
-        score += machine.solve()
+        score += machine.bruteSolve()
+        #print(machine)
     
     # Return Accumulator    
     print(score)
@@ -51,6 +52,7 @@ class ClawMachine:
         self._a = ()
         self._b = ()
         self.init = False
+        self.cost = 0
         
     def addA(self, a):
         self._a = a
@@ -68,15 +70,47 @@ class ClawMachine:
             self.init = True
         
     def __str__(self):
-        return f"Machine (init: {self.init}):\n  A: {self._a}\n  B: {self._b}\n  Prize: {self._prize}\n"
+        return f"Machine (init: {self.init}):\n  A: {self._a}\n  B: {self._b}\n  Prize: {self._prize}\n  Cost: {self.cost}\n"
         
     def __repr__(self):
         return str(self)
         
     # Returns the cheapest number of tokens to get the prize, if possible, else 0
     def solve(self):   
-        # TODO: Implement
-        return 0
+        # System of linear equations
+        # p.x = A * a.x + B * b.x 
+        # p.y = A * a.y + B * b.y
+        # Diophantine eqs, want integer solutions 
+        rSide = np.array([[self._a[0], self._b[0]], [self._a[1], self._b[1]]])
+        lSide = np.array(self._prize)
+        sol = np.linalg.solve(rSide, lSide)
+        
+        self.cost = 0
+        
+        # Now check if the integer version is valid
+        ints = [int(i) for i in sol]
+        if all([p == ints[0] * a + ints[1] * b for a, b, p in zip(self._a, self._b, self._prize)]):
+            self.cost = ints[0] * 3 + ints[1]
+        
+        return self.cost
+        
+    def bruteSolve(self):
+        # System of linear equations
+        # p.x = A * a.x + B * b.x 
+        # p.y = A * a.y + B * b.y
+        # Brute forced
+        # Worst case cost is 400 (3 * max + max = 4 * max, max = 100)
+        self.cost = 401
+        for i in range(101):
+            for j in range(101):
+                if all([p == a * i + b * j for a, b, p in zip(self._a, self._b, self._prize)]):
+                    cost = i * 3 + j
+                    if cost < self.cost:
+                        self.cost = cost
+        
+        # Clear unsolved max
+        self.cost = self.cost if self.cost < 401 else 0
+        return self.cost
         
         
     
