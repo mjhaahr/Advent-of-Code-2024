@@ -66,9 +66,23 @@ def puzzle(filename, part2):
                 for robot in robots:
                     robot.moveNTimes(world, score)
                     poses.add(robot.p)
-                    
+                
+                """   
                 # All robots at unique locations
                 if len(poses) == len(robots):
+                    break
+                """
+                
+                if score % 100 == 0:
+                    print(score)
+                
+                # Found line in the space
+                for line in makeGrid(world, robots):
+                    if "■■■■■■■■■■■■" in line:
+                        exit = True
+                        break
+                    
+                if exit:
                     break
                     
                 score += 1
@@ -101,11 +115,14 @@ def animate(world, robots, startFrame, endFrame, stride = 1):
     
     
 def makeGrid(world, robots):
-    grid = [' ' * world[0] for _ in range(world[1])]
+    grid = [[' '] * world[0] for _ in range(world[1])]
     
     for robot in robots:
-        line = grid[robot.p[1]]
-        grid[robot.p[1]] = line[:robot.p[0]] + '■' + line[robot.p[0] + 1:]
+        grid[robot.p[1]][robot.p[0]] = '■'
+    
+    for i, line in enumerate(grid):
+        string = ''.join(line)
+        grid[i] = string
     
     return grid
     
