@@ -2,6 +2,7 @@ import sys
 import os
 import re
 from math import ceil, floor 
+from time import sleep
 
 pattern = re.compile(r"p=(\d+),(\d+) v=(-?\d+),(-?\d+)")
 
@@ -12,7 +13,7 @@ import utils
 
 def puzzle(filename, part2):
     # Zero the Accumulator
-    score = 1
+    score = 0
     
     robots = []
     
@@ -29,31 +30,84 @@ def puzzle(filename, part2):
         world = [11, 7]
     else:
         world = [101, 103]
-    
-    # Move each robot 100 times
-    for robot in robots:
-        robot.moveNTimes(world, 100)
         
-    halfX = world[0] / 2
-    halfY = world[1] / 2
+    if not part2:
     
-    quadrants = [[0, 0, floor(halfX) - 1, floor(halfY) - 1],
-                    [0, ceil(halfY), floor(halfX) - 1, world[1] - 1],
-                    [ceil(halfX), 0, world[0] - 1, floor(halfY) - 1],
-                    [ceil(halfX), ceil(halfY), world[0] - 1, world[1] - 1]]
-    inQuad = [0] * 4
+        # Move each robot 100 times
+        for robot in robots:
+            robot.moveNTimes(world, 100)
+        
+        halfX = world[0] / 2
+        halfY = world[1] / 2
     
-    for robot in robots:
-        for i, quad in enumerate(quadrants):
-            if robot.isWithin(quad):
-                inQuad[i] += 1
-                break
+        quadrants = [[0, 0, floor(halfX) - 1, floor(halfY) - 1],
+                        [0, ceil(halfY), floor(halfX) - 1, world[1] - 1],
+                        [ceil(halfX), 0, world[0] - 1, floor(halfY) - 1],
+                        [ceil(halfX), ceil(halfY), world[0] - 1, world[1] - 1]]
+        inQuad = [0] * 4
     
-    for i in inQuad:
-        score *= i        
+        for robot in robots:
+            for i, quad in enumerate(quadrants):
+                if robot.isWithin(quad):
+                    inQuad[i] += 1
+                    break
+        
+        score = 1
+        for i in inQuad:
+            score *= i    
+    else:
+        # Find number of iterations to make a christmas tree?
+        # Set to False for animation (tree occurs at frame: )
+        if True:
+            exit = False
+            
+            while True:
+                poses = set()
+                for robot in robots:
+                    robot.moveNTimes(world, score)
+                    poses.add(robot.p)
+                    
+                # All robots at unique locations
+                if len(poses) == len(robots):
+                    break
+                    
+                score += 1
+                
+                    
+                
+        else:
+            animate(world, robots, 0, 100)
+            
     
     # Return Accumulator    
     print(score)
+
+def animate(world, robots, startFrame, endFrame, stride = 1):
+    frame = startFrame
+    while frame <= endFrame:
+        # Gen frame data
+        for robot in robots:
+            robot.moveNTimes(world, frame)
+        
+        # Clear the screen
+        os.system('cls' if os.name == 'nt' else 'clear')
+        # "Draw" the screen
+        print(*makeGrid(world, robots), sep='\n')
+        print("\n\n\n ")
+        # Iterate
+        frame += stride
+        # Sleep
+        sleep(1)
+    
+    
+def makeGrid(world, robots):
+    grid = [' ' * world[0] for _ in range(world[1])]
+    
+    for robot in robots:
+        line = grid[robot.p[1]]
+        grid[robot.p[1]] = line[:robot.p[0]] + '■' + line[robot.p[0] + 1:]
+    
+    return grid
     
 class Robot:
     def __init__(self, x, y, vx, vy):
@@ -66,10 +120,8 @@ class Robot:
         self.p = (newX, newY)
         
     def moveNTimes(self, bounds, n):
-        newX, newY = self.p
-        for _ in range(n):
-            newX = (newX + self.v[0]) % bounds[0]
-            newY = (newY + self.v[1]) % bounds[1]
+        newX = (self.p[0] + self.v[0] * n) % bounds[0]
+        newY = (self.p[1] + self.v[1] * n) % bounds[1]
             
         self.p = (newX, newY)
        
