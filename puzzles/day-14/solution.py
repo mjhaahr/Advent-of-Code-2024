@@ -57,61 +57,63 @@ def puzzle(filename, part2):
             score *= i    
     else:
         # Find number of iterations to make a christmas tree?
-        # Set to False for animation (tree occurs at frame: )
+        # Set to False for animation (tree occurs at frame: 6888)
         if True:
             exit = False
             
             while True:
+                score += 1
                 poses = set()
                 for robot in robots:
-                    robot.moveNTimes(world, score)
+                    robot.move(world)
                     poses.add(robot.p)
                 
-                """   
+                  
                 # All robots at unique locations
                 if len(poses) == len(robots):
+                    print(*makeGrid(world, robots), sep='\n')
                     break
+                
                 """
-                
-                if score % 100 == 0:
-                    print(score)
-                
                 # Found line in the space
                 for line in makeGrid(world, robots):
                     if "■■■■■■■■■■■■" in line:
+                        print(*makeGrid(world, robots), sep='\n')
                         exit = True
                         break
+                """ 
                     
                 if exit:
                     break
-                    
-                score += 1
                 
                     
                 
         else:
-            animate(world, robots, 0, 100)
+            score = animate(world, robots, 6868, 6888)
             
     
     # Return Accumulator    
     print(score)
 
-def animate(world, robots, startFrame, endFrame, stride = 1):
-    frame = startFrame
-    while frame <= endFrame:
-        # Gen frame data
-        for robot in robots:
+def animate(world, robots, frame, endFrame, stride = 1):
+    # Setup Start
+    for robot in robots:
             robot.moveNTimes(world, frame)
-        
+    while frame <= endFrame:
         # Clear the screen
         os.system('cls' if os.name == 'nt' else 'clear')
         # "Draw" the screen
         print(*makeGrid(world, robots), sep='\n')
-        print("\n\n\n ")
+        
+        # Gen frame data
+        for robot in robots:
+            robot.moveNTimes(world, stride)
         # Iterate
         frame += stride
         # Sleep
-        sleep(1)
+        sleep(0.05)
+        
+    return frame - 1
     
     
 def makeGrid(world, robots):
