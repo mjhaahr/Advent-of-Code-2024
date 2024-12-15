@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath
 # Import Utilities
 import utils
 
-debug = True
+debug = False
 inter = True
 
 def puzzle(filename, part2):
@@ -42,7 +42,7 @@ def puzzle(filename, part2):
     
     if part2:
         m.widen()
-        
+    
     for step, d in enumerate(dirs):
         if debug:
             if inter:
@@ -64,7 +64,6 @@ def puzzle(filename, part2):
             input()
         
     score = m.getScore()
-    
     
     # Return Accumulator    
     print(score)
@@ -128,7 +127,7 @@ class Map:
             # If looking up or down, need to look at two square (newPos and offsetNew)
             if d == (0, -1) or d == (0, 1):
                 # If a box in part 2
-                if self.boxes.get(loc, None) == '[':
+                if val == '[':
                     offsetLoc = (loc[0] + 1, loc[1])
                     offsetNew = (newPos[0] + 1, newPos[1])
                 else:
@@ -153,11 +152,20 @@ class Map:
                         
                         # This is an issue, need to actually run a look ahead (e.g. canMove, because this splits moves one even if the other stops it)
                         if valNew:
-                            canMoveAhead = self.move(d, part2, False, newPos)
+                            canMoveAhead = self.checkCanMove(d, part2, False, newPos)
                         if valOffset:
-                            canMoveOffset = self.move(d, part2, False, offsetNew)
+                            canMoveOffset = self.checkCanMove(d, part2, False, offsetNew)
                         
-                        canMove = canMoveAhead and canMoveOffset
+                        # If move can move, now apply the move
+                        if canMoveAhead and canMoveOffset:
+                            canMove = True
+                            if valNew:
+                                canMoveAhead = self.move(d, part2, False, newPos)
+                            if valOffset:
+                                canMoveOffset = self.move(d, part2, False, offsetNew)
+                            
+                        else:
+                            canMove = False
                 
                 # Else open space
                 else:
@@ -217,6 +225,94 @@ class Map:
                         self.boxes[offsetNew] = '[' 
                     
         
+        return canMove
+    
+    # A look ahead to see if all affected cells can move
+    def checkCanMove(self, d, part2, p = True, loc = (0, 0)):
+        if p:
+            loc = self.player
+        
+        canMove = False
+        newPos = (loc[0] + d[0], loc[1] + d[1])
+        # If not part2 or is the player
+        if not part2 or p:
+            # Look in obstacles
+            if newPos in self.obstacles:
+                pass
+            # Look in boxes
+            elif newPos in self.boxes:
+                canMove = self.canMove(d, part2, False, newPos)
+            # Else open space
+            else:
+                canMove = True
+        
+        else:  
+            val = self.boxes.get(loc, False)
+            # If looking up or down, need to look at two square (newPos and offsetNew)
+            if d == (0, -1) or d == (0, 1):
+                # If a box in part 2
+                if val == '[':
+                    offsetLoc = (loc[0] + 1, loc[1])
+                    offsetNew = (newPos[0] + 1, newPos[1])
+                else:
+                    offsetLoc = (loc[0] - 1, loc[1])
+                    offsetNew = (newPos[0] - 1, newPos[1])
+                
+                valNew = self.boxes.get(newPos, False)
+                valOffset = self.boxes.get(offsetNew, False)
+                
+                # If either the one directly ahead or next to directly ahead are in obstacles
+                if newPos in self.obstacles or offsetNew in self.obstacles:
+                    canMove = False
+                # Look in boxes
+                elif valNew or valOffset:
+                    # If running part2, look ahead can depend on boxes
+                    # if looking up or down, need to look at two squares (if a box)
+                    if val == valNew:
+                        canMove = self.checkCanMove(d, part2, False, newPos)
+                    else:
+                        canMoveAhead = True
+                        canMoveOffset = True
+                        
+                        # This is an issue, need to actually run a look ahead (e.g. canMove, because this splits moves one even if the other stops it)
+                        if valNew:
+                            canMoveAhead = self.checkCanMove(d, part2, False, newPos)
+                        if valOffset:
+                            canMoveOffset = self.checkCanMove(d, part2, False, offsetNew)
+                        
+                        canMove = canMoveAhead and canMoveOffset
+                
+                # Else open space
+                else:
+                    canMove = True
+            
+            # If looking left or right, might need to look at an offset position
+            else:
+                # if looking left
+                if d == (-1, 0):
+                    # If '[', look at next
+                    if val == '[':
+                        posToCheck = newPos
+                    # Else, look at the offset
+                    else:
+                        posToCheck = (newPos[0] - 1, newPos[1])
+                else:
+                    # If ']', look at next
+                    if val == ']':
+                        posToCheck = newPos
+                    # Else, look at the offset
+                    else:
+                        posToCheck = (newPos[0] + 1, newPos[1])
+                    
+                checkVal = self.boxes.get(posToCheck, False)
+                if posToCheck in self.obstacles:
+                    pass
+                elif checkVal:
+                    canMove = self.checkCanMove(d, part2, False, posToCheck)
+                # Else open space
+                else:
+                    canMove = True
+                
         return canMove
     
     # sum the GPS loc of each box (100 * y + x)   
