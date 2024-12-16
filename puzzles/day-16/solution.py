@@ -2,6 +2,7 @@ import sys
 import os
 import math
 import heapq
+from collections import defaultdict
 
 # Modifying Path to include Repo Directory (for util import)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -35,65 +36,61 @@ def puzzle(filename, part2):
             
     maze = utils.Grid(lines)
     
-    score = findPath(maze, start, end)
+    score = findPath(maze, start, end, part2)
     
     # Return Accumulator    
     print(score)
     
-def findPath(maze, start, end):
-    # Runs Dijkstra, effectively
-    dirs = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+def findPath(maze, start, end, part2):
+    # Runs Dijkstra, effectively, but store rotation as a step
     
-    costs = {start: 0}
-    prevs = {start: None}
+    costs = defaultdict(lambda: math.inf)
+    costs[(start, (1, 0))] = 0
+    prevs = defaultdict(set)
+    
+    pathCost = math.inf
     
     # Priority Cell queue
     cells = []
     # Store direction that was came from (with the start)
-    heapq.heappush(cells, (0, [start, (1, 0)]))
+    heapq.heappush(cells, (0, (start, (1, 0))))
     while cells:
-        cellData = heapq.heappop(cells)[1]
+        cost, cellData = heapq.heappop(cells)
         cell = cellData[0]
         d = cellData[1]
         
-        # If at end, do not process
+        # If at end, update the stored cost
         if cell == end:
-            continue
+            if cost < pathCost:
+                pathCost = cost
         
-        for val, x, y, offsetX, offsetY in maze.getNeighborsOf4(cell):
-            nextCell = (x, y)
-            newDir = (offsetX, offsetY)
-            # If the prior cell to this one is the current cell, ignore
-            if nextCell == prevs.get(cell, False):
-                continue
-            # If not a wall, add to the list 
-            if val != '#':
-                # Get the cost of the current cell + 1
-                cost = costs.get(cell) + 1
-                # If direction needs to change, add 1000 to the cost
-                if d != newDir:
-                    # If first, ignore
-                    cost += 1000
-                
-                # If the existing cost is greater than new (default val is infinity), replace with new
-                if costs.get(nextCell, math.inf) > cost:
-                    costs[nextCell] = cost
-                    prevs[nextCell] = cell
-                    heapq.heappush(cells, (cost, [nextCell, newDir]))
-
-    # Not rebuilding path, currently un-needed
-    """
-    path = [end]
-    currCell = end
-    while currCell != start:
-        currCell = prevs[currCell]
-        path.append(currCell)
-        
-    path.reverse()
-    print(path)
-    """
+        for newCellData, constIncr in getNextCells(maze, cell, d):
+            newCost = cost + constIncr
+            # If the new cost is less than the current cost
+            if newCost < costs[newCellData]:
+                costs[newCellData] = newCost
+                # And add to the priority queue
+                heapq.heappush(cells, (newCost, newCellData))
+                prevs[newCellData] = {cellData}
+            # If equal, add to the set
+            elif newCost == costs[newCellData]:
+                prevs[newCellData].add(cellData)
     
-    return costs[end]
+    if not part2:
+        score = pathCost
+    else:
+        score = 0    
+    
+    return score
+    
+# Yields the optional turns then the straight ahead: (cell, dir), cost
+def getNextCells(maze, cell, d):
+    yield (cell, utils.getRight(d)), 1000
+    yield (cell, utils.getLeft(d)), 1000
+    nextCell = (cell[0] + d[0], cell[1] + d[1])
+    if maze.get(nextCell) != '#':
+        yield (nextCell, d), 1
+
     
 if __name__ == "__main__":
     # Check number of Arguments, expect 2 (after script itself)
