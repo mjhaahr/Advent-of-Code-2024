@@ -105,19 +105,18 @@ class Grid:
         
         return neighbors
         
+dirList = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
 def getRight(d):
     d = (d[0], d[1])
-    dirs = [(0, -1), (1, 0), (0, 1), (-1, 0)]
-    idx = dirs.index(d)
+    idx = dirList.index(d)
     idx = (idx + 1) % 4
-    return dirs[idx]
+    return dirList[idx]
     
     
 def getLeft(d):
     d = (d[0], d[1])
-    dirs = [(0, -1), (1, 0), (0, 1), (-1, 0)]
-    idx = dirs.index(d)
+    idx = dirList.index(d)
     idx = (idx + 3) % 4
-    return dirs[idx]
+    return dirList[idx]
             

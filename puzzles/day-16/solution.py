@@ -41,6 +41,7 @@ def puzzle(filename, part2):
     # Return Accumulator    
     print(score)
     
+    
 def findPath(maze, start, end, part2):
     # Runs Dijkstra, effectively, but store rotation as a step
     
@@ -79,9 +80,28 @@ def findPath(maze, start, end, part2):
     if not part2:
         score = pathCost
     else:
-        score = 0    
+        # Find all cells that are in a best path
+        bestCells = set()
+        stack = []
+        endCost = math.inf
+        for d in utils.dirList:
+            cellData = (end, d)
+            cost = costs[cellData]
+            if cost < endCost:
+                stack = [cellData]
+                endCost = cost
+            elif cost == endCost:
+                stack.append(cellData)
+        
+        while stack:
+            newCellData = stack.pop()
+            bestCells.add(newCellData[0])
+            stack.extend(list(prevs[newCellData]))
+        
+        score = len(bestCells)          
     
     return score
+    
     
 # Yields the optional turns then the straight ahead: (cell, dir), cost
 def getNextCells(maze, cell, d):
