@@ -44,19 +44,24 @@ def puzzle(filename, part2):
     
     if not part2:
         bytes = set(bytes[:bytesLen])
-        score = findPath(bytes, (0, 0), world)
+        path = findPath(bytes, (0, 0), world)
+        score = len(path)
     else:
         score = bytesLen
         subBytes = set(bytes[:score])
-        longest = findPath(subBytes, (0, 0), world)
-        while longest < math.inf:
-            subBytes.add(bytes[score])
-            longest = findPath(subBytes, (0, 0), world)
+        path = findPath(subBytes, (0, 0), world)
+        
+        while path != None:
+            newByte = bytes[score]
+            subBytes.add(newByte)
             score += 1
+            
+            # Only re-path if the newByte is on the path
+            if newByte in path:
+                path = findPath(subBytes, (0, 0), world)
         
         # Go back by one
-        score -= 1
-        score = f"{bytes[score][0]},{bytes[score][1]}"
+        score = f"{newByte[0]},{newByte[1]}"
     
     # Return Accumulator    
     print(score)
@@ -85,9 +90,16 @@ def findPath(obstacles, start, world):
                 heapq.heappush(cells, (newCost, newCell))
                 prevs[newCell] = cell
     
-    score = costs[world]
+    if costs[world] != math.inf:
+        path = set()
+        cell = world
+        while cell != start:
+            cell = prevs[cell]
+            path.add(cell)
+    else:
+        path = None
     
-    return score
+    return path
     
     
 def getNextCells(cell, world, obstacles):
