@@ -27,10 +27,10 @@ def puzzle(filename, part2):
     # Setup the world bounds
     if "example" in filename:
         world = (6, 6)
-        bytes = set(bytes[:12])
+        bytesLen = 12
     else:
         world = (70, 70)
-        bytes = set(bytes[:1024])
+        bytesLen = 1024
     
     """
     rows = [['.'] * (world[0] + 1) for _ in range((world[1] + 1))]
@@ -42,7 +42,21 @@ def puzzle(filename, part2):
     print(*rowstr, sep='\n')
     """
     
-    score = findPath(bytes, (0, 0), world)
+    if not part2:
+        bytes = set(bytes[:bytesLen])
+        score = findPath(bytes, (0, 0), world)
+    else:
+        score = bytesLen
+        subBytes = set(bytes[:score])
+        longest = findPath(subBytes, (0, 0), world)
+        while longest < math.inf:
+            score += 1
+            subBytes = set(bytes[:score])
+            longest = findPath(subBytes, (0, 0), world)
+        
+        # Go back by one
+        score -= 1
+        score = f"{bytes[score][0]},{bytes[score][1]}"
     
     # Return Accumulator    
     print(score)
