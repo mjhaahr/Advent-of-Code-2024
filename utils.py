@@ -107,6 +107,9 @@ class Grid:
         
 dirList = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
+def addDir(cell, d):
+    return (cell[0] + d[0], cell[1] + d[1])
+
 def getRight(d):
     d = (d[0], d[1])
     idx = dirList.index(d)
