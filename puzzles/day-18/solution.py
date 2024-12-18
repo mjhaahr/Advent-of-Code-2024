@@ -50,9 +50,9 @@ def puzzle(filename, part2):
         subBytes = set(bytes[:score])
         longest = findPath(subBytes, (0, 0), world)
         while longest < math.inf:
-            score += 1
-            subBytes = set(bytes[:score])
+            subBytes.add(bytes[score])
             longest = findPath(subBytes, (0, 0), world)
+            score += 1
         
         # Go back by one
         score -= 1
