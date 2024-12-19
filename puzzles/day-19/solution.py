@@ -15,7 +15,7 @@ def puzzle(filename, part2):
     # Open File
     with open(filename, 'r') as fp:
         # Loop over all lines
-        bases = fp.readline().split(', ')
+        bases = fp.readline().strip().split(', ')
         fp.readline()
         targets = []
         for line in fp.readlines():
@@ -27,9 +27,11 @@ def puzzle(filename, part2):
     cache = {}
     
     for num, target in enumerate(targets):
-        print(f"Progress: {num}/{len(targets)}, curr score: {score}")
-        if composable(target, bases, cache):
-            score += 1
+        out = composable(target, bases, cache)
+        if not part2:
+            score += 1 if out > 0 else 0
+        else:
+            score += out
         
         
     # Return Accumulator    
@@ -38,32 +40,27 @@ def puzzle(filename, part2):
 
 # Recursively search through the beginning of words 
 def composable(target, bases, cache):
-    # If empty, return true
+    # If empty, return 1, one way to compose
     if target == "":
-        return True 
+        return 1 
         
     # If already seen, return that
     if target in cache:
         return cache[target]
         
-    # Assume False if not seen it
-    cache[target] = False
+    # Assume 0 if not seen it
+    ways = 0
         
     # For all the substrings
     for base in bases:
-            
-        length = len(base)
-        # Break into start and rest
-        start = target[0:length]
-        rest = target[length:]
-        
-        # If the start is equal AND the if the rest is composable, store true (and break), else continue
-        if start == base and composable(rest, bases, cache):
-            cache[target] = True
-            break
+        # If the start is equal, store number of ways it's composable
+        if target.startswith(base):
+            ways += composable(target[len(base):], bases, cache)
     
+    # Update storage
+    cache[target] = ways
     # Return the found value
-    return cache[target]   
+    return ways  
         
     
 if __name__ == "__main__":
