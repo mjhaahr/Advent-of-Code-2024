@@ -52,7 +52,7 @@ def puzzle(filename, part2):
     if not part2:
         skip = 2
     else:
-        skip = -1
+        skip = 20
 
     # All Cells
     for cell in product(range(world[0]), range(world[1])):
