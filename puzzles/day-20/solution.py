@@ -17,8 +17,8 @@ def puzzle(filename, part2):
 
     # Default defines
     world = [0, 0]
-    start = [0, 0]
-    end = [0, 0]
+    start = (0, 0)
+    end = (0, 0)
 
     # Open File
     with open(filename, 'r') as fp:
@@ -49,17 +49,25 @@ def puzzle(filename, part2):
     # Base Path Length: Length from start to end
     basePath = fromStart[end]
 
-    if not part2:
-        skip = 2
-    else:
-        skip = 20
+    offsets = []
+
+    skip = 20 if part2 else 2
+
+    for delta in product(range(-skip, skip + 1), repeat=2):
+        # Skip center
+        if delta == (0, 0):
+            continue
+        dist = (abs(delta[0]) + abs(delta[1]))
+        if dist <= skip:
+            offsets.append((delta, dist))
 
     # All Cells
     for cell in product(range(world[0]), range(world[1])):
         # All Open Cells
         if cell not in obstacles:
             # Find the cell with a cheat
-            for newCell, dist in findCellsWithInDist(cell, skip):
+            for delta, dist in offsets:
+                newCell = utils.addDir(cell, delta)
                 x, y = newCell
                 # Cell is not an obstacle
                 if newCell in obstacles:
@@ -110,18 +118,6 @@ def getNextCells(cell, world, obstacles):
         # Else, yield the cell
         else:
             yield newCell
-
-
-def findCellsWithInDist(cell, dist):
-    # Effectively create the "circle" around the cell
-    # Find the box around the cell
-    for delta in product(range(-dist, dist + 1), repeat=2):
-        # Skip center
-        if delta == (0, 0):
-            continue
-        dist = (abs(delta[0]) + abs(delta[1]))
-        if dist <= dist:
-            yield utils.addDir(cell, delta), dist
 
 
 def printMap(world, start, end, obstacles, path=[]):
