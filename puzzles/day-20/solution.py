@@ -59,8 +59,8 @@ def puzzle(filename, part2):
         # All Open Cells
         if cell not in obstacles:
             # Find the cell with a cheat
-            for x, y in findCellsWithInDist(cell, skip):
-                newCell = (x, y)
+            for newCell, dist in findCellsWithInDist(cell, skip):
+                x, y = newCell
                 # Cell is not an obstacle
                 if newCell in obstacles:
                     continue
@@ -68,7 +68,6 @@ def puzzle(filename, part2):
                 elif x < 0 or y < 0 or x > world[0] or y > world[1]:
                     continue
                 else:
-                    dist = calcDist(cell, newCell)
                     cheat = fromStart[cell] + dist + fromEnd[newCell]
 
                     if cheat <= basePath - 100:
@@ -120,13 +119,9 @@ def findCellsWithInDist(cell, dist):
         # Skip center
         if delta == (0, 0):
             continue
-        if (abs(delta[0]) + abs(delta[1])) <= dist:
-            yield utils.addDir(cell, delta)
-
-
-def calcDist(a, b):
-    delta = (a[0] - b[0], a[1] - b[1])
-    return abs(delta[0]) + abs(delta[1])
+        dist = (abs(delta[0]) + abs(delta[1]))
+        if dist <= dist:
+            yield utils.addDir(cell, delta), dist
 
 
 def printMap(world, start, end, obstacles, path=[]):
