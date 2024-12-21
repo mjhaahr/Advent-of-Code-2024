@@ -1,6 +1,6 @@
 import sys
 import os
-from itertools import pairwise, permutations
+from itertools import permutations
 from functools import cache
 
 # Modifying Path to include Repo Directory (for util import)
@@ -48,7 +48,7 @@ def puzzle(filename, part2):
             line = line.strip()
             codes.append(line)
 
-    numRobots = -1 if part2 else 2
+    numRobots = 25 if part2 else 2
 
 
 # TODO: find all the paths, and choose the minimum value
