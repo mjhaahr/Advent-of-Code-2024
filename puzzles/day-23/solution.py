@@ -30,7 +30,8 @@ def puzzle(filename, part2):
 
     if not part2:
         for a, connectsTo in connections.items():
-            # For each combination of 2 elements of connectsTo, check if both connect to each other
+            # For each combination of 2 elements of connectsTo
+            # Check if both connect to each other
             for b, c in combinations(connectsTo, 2):
                 if c in connections[b]:
                     newGame = tuple(sorted([a, b, c]))
@@ -43,32 +44,37 @@ def puzzle(filename, part2):
                     break
 
     else:
+        minLen = 2
         for a, connectsTo in connections.items():
-            # For each combination of 2 elements of connectsTo, check if both connect to each other
-            for i in range(2, len(connectsTo)):
-                for combo in combinations(connectsTo, i):
-                    found = True
-                    for comp in combo:
-                        for other in combo:
-                            if comp == other:
-                                continue
-                            elif other not in connections[comp]:
-                                found = False
-                                break
+            # For each combination of elements of connectsTo (from minLen to it's length)
+            # Check if all connect to each other
+            for i in range(minLen, len(connectsTo)):
+                for connectionList in combinations(connectsTo, i):
+                    if isValidGame(connectionList, connections):
+                        game = list(connectionList)
+                        if len(game) > minLen:
+                            minLen = len(game)
 
-                        if not found:
-                            break
-
-                    if found:
-                        l = list(combo)
-                        l.append(a)
-                        newGame = tuple(sorted(l))
+                        game.append(a)
+                        newGame = tuple(sorted(game))
                         games.add(newGame)
 
-        print(*max(games, key=len), sep=',')
+        score = ','.join(max(games, key=len))
 
     # Return Accumulator
     print(score)
+
+
+def isValidGame(connectionList, connections):
+    for comp in connectionList:
+        for other in connectionList:
+            if comp == other:
+                continue
+            elif other not in connections[comp]:
+                return False
+
+    return True
+
 
 if __name__ == "__main__":
     # Check number of Arguments, expect 2 (after script itself)
