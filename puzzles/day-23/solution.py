@@ -28,18 +28,44 @@ def puzzle(filename, part2):
     # Sets of tuples (sort alphabetically)
     games = set()
 
-    for a, connectsTo in connections.items():
-        # For each combination of 2 elements of connectsTo, check if both connect to each other
-        for b, c in combinations(connectsTo, 2):
-            if c in connections[b]:
-                newSet = sorted([a, b, c])
-                games.add(tuple(newSet))
+    if not part2:
+        for a, connectsTo in connections.items():
+            # For each combination of 2 elements of connectsTo, check if both connect to each other
+            for b, c in combinations(connectsTo, 2):
+                if c in connections[b]:
+                    newGame = tuple(sorted([a, b, c]))
+                    games.add(newGame)
 
-    for game in games:
-        for comp in game:
-            if comp[0] == 't':
-                score += 1
-                break
+        for game in games:
+            for comp in game:
+                if comp[0] == 't':
+                    score += 1
+                    break
+
+    else:
+        for a, connectsTo in connections.items():
+            # For each combination of 2 elements of connectsTo, check if both connect to each other
+            for i in range(2, len(connectsTo)):
+                for combo in combinations(connectsTo, i):
+                    found = True
+                    for comp in combo:
+                        for other in combo:
+                            if comp == other:
+                                continue
+                            elif other not in connections[comp]:
+                                found = False
+                                break
+
+                        if not found:
+                            break
+
+                    if found:
+                        l = list(combo)
+                        l.append(a)
+                        newGame = tuple(sorted(l))
+                        games.add(newGame)
+
+        print(*max(games, key=len), sep=',')
 
     # Return Accumulator
     print(score)
