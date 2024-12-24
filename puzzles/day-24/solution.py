@@ -33,8 +33,9 @@ def puzzle(filename, part2):
             else:
                 m = opPattern.match(line)
                 if m:
-                    offset = int(m.group(4)[1:3])
-                    maxZ = max(offset, maxZ)
+                    if m.group(4)[0] == 'z':
+                        offset = int(m.group(4)[1:3])
+                        maxZ = max(offset, maxZ)
                     ops.append(Op(m.group(1), m.group(3), m.group(4), m.group(2)))
 
     if not part2:
@@ -102,8 +103,10 @@ def puzzle(filename, part2):
                 for op in adder:
                     ops.remove(op)
             else:
+                print(f"Error at {i}")
                 break
                 # TODO find swap
+                # Only occurs within the swap, rather than outside of it
 
         # Last cOut should be z[maxZ]
         good = cOut == f"z{maxZ:02d}"
@@ -121,7 +124,7 @@ def evalRipple(cIn, ops, idx, debug=False):
 
     halfCarry = None # x[idx] & y[idx] = halfCarry
     factorIn = None # halfAdd & cIn = factorIn
-    fullCarry = None # halfCarry | factorIn
+    fullCarry = None # halfCarry | factorIn = carryOut
 
     # Find the operations
     x = f"x{idx:02d}"
