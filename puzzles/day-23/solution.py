@@ -25,10 +25,9 @@ def puzzle(filename, part2):
             connections[a].add(b)
             connections[b].add(a)
 
-    # Sets of tuples (sort alphabetically)
-    games = set()
-
     if not part2:
+        # Sets of tuples (sorted alphabetically)
+        games = set()
         for a, connectsTo in connections.items():
             # For each combination of 2 elements of connectsTo
             # Check if both connect to each other
@@ -45,6 +44,7 @@ def puzzle(filename, part2):
 
     else:
         minLen = 2
+        maxGame = ()
         for a, connectsTo in connections.items():
             # For each combination of elements of connectsTo (from minLen to it's length)
             # Check if all connect to each other
@@ -57,9 +57,9 @@ def puzzle(filename, part2):
 
                         game.append(a)
                         newGame = tuple(sorted(game))
-                        games.add(newGame)
+                        maxGame = newGame
 
-        score = ','.join(max(games, key=len))
+        score = ','.join(maxGame)
 
     # Return Accumulator
     print(score)
