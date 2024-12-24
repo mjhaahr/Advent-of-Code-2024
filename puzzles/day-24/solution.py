@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+from copy import deepcopy
 
 # Modifying Path to include Repo Directory (for util import)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -38,25 +39,76 @@ def puzzle(filename, part2):
 
     # Run all operations
     idx = 0
-    while ops:
-        op = ops[idx]
+    # Duplicated because of manipulation
+    savedOps = deepcopy(ops)
+    while savedOps:
+        op = savedOps[idx]
         if op.a in values and op.b in values:
             values[op.out] = op.run(values[op.a], values[op.b])
-            del ops[idx]
+            del savedOps[idx]
 
-            if idx >= len(ops):
-                idx = len(ops) - 1
+            if idx >= len(savedOps):
+                idx = len(savedOps) - 1
         else:
-            idx = (idx + 1) % len(ops)
+            idx = (idx + 1) % len(savedOps)
 
-    # Find All Output Values
+    # Find All Input and Output Values and assign them
+    z = 0
+    bits = 0
+    # Loop over all
     for out, val in values.items():
-        if out[0] != 'z':
-            continue
+        if out[0] == 'z':
+            offset = int(out[1:3])
+            z += val << offset
+            bits = max(offset + 1, bits)
 
-        # Shift in the output at it's position
-        offset = int(out[1:3])
-        score += val << offset
+    if not part2:
+        score = z
+    else:
+        # Part two finds the "swapped" operations
+        if "example" in filename:
+            swapped = 2
+        else:
+            swapped = 4
+
+        swappedPaths = []
+
+        xPath = []
+        for i in range(bits):
+            out = f"x{i:02d}"
+            path = [out]
+            while out[0] != 'z':
+                for op in ops:
+                    if op.a == out or op.b == out:
+                        newOut = op.out
+                        path.append(newOut)
+                        out = newOut
+                        break
+
+            xPath.append(path)
+
+        yPath = []
+        for i in range(bits):
+            out = f"y{i:02d}"
+            path = [out]
+            while out[0] != 'z':
+                for op in ops:
+                    if op.a == out or op.b == out:
+                        newOut = op.out
+                        path.append(newOut)
+                        out = newOut
+                        break
+
+            yPath.append(path)
+
+        for xs, ys in zip(xPath, yPath):
+            if xs[0][1:3] != xs[-1][1:3] or ys[0][1:3] != ys[-1][1:3]:
+                swappedPaths.append(xs)
+
+        print(swappedPaths)
+
+
+
 
     # Return Accumulator
     print(score)
