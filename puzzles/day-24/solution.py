@@ -49,14 +49,14 @@ def puzzle(filename, part2):
         else:
             idx = (idx + 1) % len(ops)
 
-    # Reverse alphabetically sort the output value keys
-    outs = [val for val in values.keys() if val[0] == 'z']
-    outs.sort(reverse=True)
+    # Find All Output Values
+    for out, val in values.items():
+        if out[0] != 'z':
+            continue
 
-    # Compress them into a string
-    bin = ''.join([str(values[out]) for out in outs])
-    # Convert binary to decimal
-    score = int(bin, 2)
+        # Shift in the output at it's position
+        offset = int(out[1:3])
+        score += val << offset
 
     # Return Accumulator
     print(score)
