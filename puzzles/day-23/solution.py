@@ -44,7 +44,7 @@ def puzzle(filename, part2):
 
     else:
         minLen = 2
-        maxGame = ()
+        maxGame = []
         for a, connectsTo in connections.items():
             # For each combination of elements of connectsTo (from minLen to it's length)
             # Check if all connect to each other
@@ -56,10 +56,9 @@ def puzzle(filename, part2):
                             minLen = len(game)
 
                         game.append(a)
-                        newGame = tuple(sorted(game))
-                        maxGame = newGame
+                        maxGame = game
 
-        score = ','.join(maxGame)
+        score = ','.join(sorted(maxGame))
 
     # Return Accumulator
     print(score)
