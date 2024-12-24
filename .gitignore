@@ -162,5 +162,6 @@ cython_debug/
 #.idea/
 
 
-# Not sharing inouts
+# Not sharing inputs or notes
 inputs/day-*
+*notes.txt

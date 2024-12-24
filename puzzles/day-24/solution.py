@@ -1,6 +1,8 @@
 import sys
 import os
 import re
+from itertools import combinations
+from copy import deepcopy
 
 # Modifying Path to include Repo Directory (for util import)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -89,36 +91,156 @@ def puzzle(filename, part2):
         if debug: print(f"Add {addOp}\nCarry {carryOp}\n")
 
         # EVAL First Op
-        # Remove the ops from savedOps for time savings
+        # Remove the ops from savedOps for time savings on later search
         adder = [addOp, carryOp]
         for op in adder:
             ops.remove(op)
 
-        for i in range(1, maxZ):
-            good, adder = evalRipple(cOut, ops, i)
+        for idx in range(1, maxZ):
+            good, adder = evalRipple(cOut, idx, ops, debug)
             if debug: print(good, adder)
-            # Remove the ops from savedOps for time savings
+            # Remove the ops from savedOps for time savings on later search
             if good:
                 cOut = adder[-1].out
                 for op in adder:
                     ops.remove(op)
             else:
-                print(f"Error at {i}")
-                break
-                # TODO find swap
                 # Only occurs within the swap, rather than outside of it
+                newSwaps, adder, cOut = findSwap(idx, cOut, ops, debug)
+                swaps.extend(newSwaps)
+                # Remove the ops from savedOps for time savings on later search
+                for op in adder:
+                    ops.remove(op)
+
+                if len(swaps) // 2 >= swapped:
+                    break
 
         # Last cOut should be z[maxZ]
-        good = cOut == f"z{maxZ:02d}"
-        print(good)
+        score = ','.join(sorted(swaps))
 
     # Return Accumulator
     print(score)
 
+# Returns the swapped outputs and the list of operations in the adder stage
+# Also needs to return carry out
+def findSwap(idx, cIn, ops, debug=False):
+    # Steps:
+        # Find all operations for the given input
+        # Find all the outputs of those operations
+        # Find all pairs of those operations and swap their outputs (do it on copies)
+
+    halfAdd = None  # x[idx] ^ y[idx] = halfAdd
+    fullAdd = None  # halfAdd ^ cIn = z[idx]
+
+    halfCarry = None # x[idx] & y[idx] = halfCarry
+    factorIn = None # halfAdd & cIn = factorIn
+    fullCarry = None # halfCarry | factorIn = carryOut
+
+    # Find the operations
+    x = f"x{idx:02d}"
+    y = f"y{idx:02d}"
+    z = f"z{idx:02d}"
+
+    swaps = []
+    adder = []
+
+    outputs = set()
+
+    # Find the known ops
+    for op in ops:
+        if halfAdd is not None and halfCarry is not None:
+            break
+        if x in op.args and y in op.args:
+            if op.op == 'XOR':
+                halfAdd = op
+                outputs.add(op.out)
+                if debug: print("found Half Add")
+            elif op.op == 'AND':
+                halfCarry = op
+                outputs.add(op.out)
+                if debug: print("found Half Carry")
+
+    # Find ops with carry in
+    for op in ops:
+        if fullAdd is not None and factorIn is not None:
+            break
+        if cIn in op.args:
+            if op.op == 'XOR':
+                fullAdd = op
+                outputs.add(op.out)
+                if debug: print("found Full Add")
+            elif op.op == 'AND':
+                factorIn = op
+                outputs.add(op.out)
+                if debug: print("found Factor In")
+
+    # Find Full Carry (which will be an OR and one of the inputs will be in the seen outputs)
+    for op in ops:
+        if op.op == 'OR':
+            if op.args.intersection(outputs):
+                fullCarry = op
+                break
+
+    if debug:
+        print(f"Half Adder {halfAdd}")
+        print(f"Full Adder {fullAdd}")
+        print(f"Half Carry {halfCarry}")
+        print(f"Factor In  {factorIn}")
+        print(f"Full Carry {fullCarry}")
+
+    # Found all the operations
+    adder = [halfAdd, fullAdd, halfCarry, factorIn, fullCarry]
+
+    # How to evaluate swaps?
+    for i, j in combinations(range(5), 2):
+        newAdder = deepcopy(adder)
+        if debug: print(f"Swapping: {adder[i].out} and {adder[j].out}")
+        newAdder[i].out = adder[j].out
+        newAdder[j].out = adder[i].out
+
+        if checkAdder(newAdder, z, debug):
+            swaps = [adder[i].out, adder[j].out]
+            # Also get the carry out
+            return swaps, adder, newAdder[-1].out
+
+    return [], [], ''
+
+
+# Returns true if the supplied adder is good
+# Adder order is expected: Half Add, Full Add, Half Carry, Factor In, Full Carry
+def checkAdder(adder, output, debug):
+    # Ways to check adder:
+        # Full Add Output is the expected value
+        # Half Add Output in Args of Full Add
+        # Half Add Output in Args of Factor In
+        # Full Carry inputs are Factor In and Half Carry
+    halfAdd, fullAdd, halfCarry, factorIn, fullCarry = adder
+
+    # Expected output is wrong
+    if fullAdd.out != output:
+        if debug: print("  Wrong Output")
+        return False
+
+    if halfAdd.out not in fullAdd.args:
+        if debug: print("  Half Add not in Full Add")
+        return False
+
+    if halfAdd.out not in factorIn.args:
+        if debug: print("  Half Add not in Factor In")
+        return False
+
+    if set([halfCarry.out, factorIn.out]) != fullCarry.args:
+        if debug: print("  Full Carry Inputs are not Factor In and Half Carry")
+        return False
+
+    if debug: print("  Good Swap")
+    return True
+
+
 
 # Returns if the adder is good and the operations to create the full adder (if good)
 # If the Order: Half Add, Full Add, Half Carry, Factor In, Full Carry
-def evalRipple(cIn, ops, idx, debug=False):
+def evalRipple(cIn, idx, ops, debug=False):
     halfAdd = None  # x[idx] ^ y[idx] = halfAdd
     fullAdd = None  # halfAdd ^ cIn = z[idx]
 
@@ -132,6 +254,8 @@ def evalRipple(cIn, ops, idx, debug=False):
 
     try:
         for op in ops:
+            if halfAdd is not None and halfCarry is not None:
+                break
             if x in op.args and y in op.args:
                 if op.op == 'XOR':
                     halfAdd = op
@@ -139,10 +263,10 @@ def evalRipple(cIn, ops, idx, debug=False):
                 elif op.op == 'AND':
                     halfCarry = op
                     if debug: print("found Half Carry")
-            if halfAdd is not None and halfCarry is not None:
-                break
 
         for op in ops:
+            if fullAdd is not None and factorIn is not None:
+                break
             if halfAdd.out in op.args and cIn in op.args:
                 if op.op == 'XOR':
                     fullAdd = op
@@ -150,8 +274,6 @@ def evalRipple(cIn, ops, idx, debug=False):
                 elif op.op == 'AND':
                     factorIn = op
                     if debug: print("found Factor In")
-            if fullAdd is not None and factorIn is not None:
-                break
 
         for op in ops:
             if factorIn.out in op.args and halfCarry.out in op.args:
@@ -160,15 +282,15 @@ def evalRipple(cIn, ops, idx, debug=False):
                     if debug: print("found Full Carry")
                     break
 
+        if fullAdd.out == f"z{idx:02d}":
+            #print(f"Half Add {halfAdd}\nFull Add {fullAdd}\nHalf Carry {halfCarry}\nFactor In {factorIn}\nFull Carry {fullCarry}\n")
+            return True, [halfAdd, fullAdd, halfCarry, factorIn, fullCarry]
+
+
     except AttributeError:
-        return False, []
+        pass
 
-    #print(f"Half Add {halfAdd}\nFull Add {fullAdd}\nHalf Carry {halfCarry}\nFactor In {factorIn}\nFull Carry {fullCarry}\n")
-
-    if fullAdd.out == f"z{idx:02d}":
-        return True, [halfAdd, fullAdd, halfCarry, factorIn, fullCarry]
-    else:
-        return False, []
+    return False, []
 
 
 class Op:
