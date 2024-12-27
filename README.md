@@ -1,8 +1,10 @@
 # Advent of Code 2024
 
-Repo for my entries for [Advent of Code 2024](https://adventofcode.com/2024/about).
+Repo for my entries for [Advent of Code 2024](https://adventofcode.com/2024/about)
 
 All are solved in vanilla Python (using lots of `itertools` and `re`/`regex` as well as the occasional `heapq` and `functools`)
+
+_Obtained all 50 stars_
 
 ## Usage
 
