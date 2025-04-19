@@ -7,7 +7,7 @@ days = sorted(os.listdir("puzzles"))
 day = int(days[-1].split('-')[-1]) + 1
 
 dayName = f"day-{day:02d}"
-puzzleEntry = f"puzzles/{dayName}"
+puzzleEntry = f"python/puzzles/{dayName}"
 solEntry = f"{puzzleEntry}/solution.py"
 inputsEntry = f"inputs/{dayName}"
 

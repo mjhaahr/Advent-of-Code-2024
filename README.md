@@ -8,10 +8,10 @@ _Obtained all 50 stars_
 
 ## Usage
 
-To run, use the provided `runner.py` script:
+To run, use the provided `python_runner.py` script:
 
 ```
-python runner.py [day#] [part# = 1] [dataSet = 0]
+python python_runner.py [day#] [part# = 1] [dataSet = 0]
 # day#: Sets the day to run
 # part#: Sets which part to run (defaults to 1 unless 2 is entered)
 # dataSet: Which data set to use, 0 (or any negative) is puzzle input, 1+ is for examples 1+
@@ -24,7 +24,7 @@ To create a new day, use the provided `makeday.py` script, which will create the
 
 To add an input to the most recent day, use the provided `addinput.py` script, which asks whether you'd like to add the input file or an example file and then opens it with `nano`
 
-_All the helpful scripts (`runner.py`, `makeday.py`, and `addinput.py`) are a little silly and abuse the `os` and `sys` modules_
+_All the helpful scripts (`python_runner.py`, `makeday.py`, and `addinput.py`) are a little silly and abuse the `os` and `sys` modules_
 
 
 ## Assorted Notes
