@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include "utils.hpp"
 using namespace std;
 
 void puzzle(char *input, bool part2) {
@@ -16,7 +17,7 @@ void puzzle(char *input, bool part2) {
 int main(int argc, char *argv[]) {
     // Expect 2 arguments beyond the caller: input file and part number
     if (argc == 3) {
-        puzzle(argv[1], argv[2][1] == '2');
+        puzzle(argv[1], argv[2][0] == '2');
     } else {
         cerr << "Error: Expected 2 arguments, got: " << (argc - 1) << endl;
     }
