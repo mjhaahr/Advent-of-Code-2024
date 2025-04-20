@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.o
 
 # Distribution / packaging
 .Python
@@ -165,3 +166,5 @@ cython_debug/
 # Not sharing inputs or notes
 inputs/day-*
 *notes.txt
+
+cpp/outputs
